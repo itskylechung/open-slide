@@ -233,6 +233,8 @@ export const ja: Locale = {
     designToggle: 'デザイン',
     designToggleTitle: 'デザイントークン',
     fontPresetCustom: 'カスタム…',
+    shuffleAria: 'デザインをシャッフル',
+    shuffleTitle: 'シャッフルしてインスピレーションを得る',
   },
 
   asset: {

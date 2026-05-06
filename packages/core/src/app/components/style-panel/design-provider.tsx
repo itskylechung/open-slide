@@ -11,6 +11,7 @@ import {
 import { toast } from 'sonner';
 import { useHistory } from '@/components/history-provider';
 import { type DesignSystem, defaultDesign, designToCssVars } from '../../lib/design';
+import { shuffleDesign } from '../../lib/design-presets';
 import { useDesign as useDesignFetch } from './use-design';
 
 type DesignCtx = {
@@ -26,6 +27,7 @@ type DesignCtx = {
   commit: () => Promise<void>;
   discard: () => void;
   resetToDefaults: () => void;
+  shuffle: () => void;
 };
 
 const Ctx = createContext<DesignCtx | null>(null);
@@ -98,6 +100,16 @@ export function DesignProvider({ slideId, children }: { slideId: string; childre
     });
   }, [history]);
 
+  const shuffle = useCallback(() => {
+    const prev = draftRef.current;
+    const next = clone(shuffleDesign(prev));
+    setDraft(next);
+    history.record({
+      undo: () => setDraft(prev),
+      redo: () => setDraft(next),
+    });
+  }, [history]);
+
   // SlideCanvas emits its design vars inline on the canvas root, so a draft
   // overlay must use `!important` to outrank those inline styles.
   const previewCss = useMemo(() => {
@@ -121,6 +133,7 @@ export function DesignProvider({ slideId, children }: { slideId: string; childre
     commit,
     discard,
     resetToDefaults,
+    shuffle,
   };
 
   return (

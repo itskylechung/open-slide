@@ -231,6 +231,8 @@ export const en: Locale = {
     designToggle: 'Design',
     designToggleTitle: 'Design tokens',
     fontPresetCustom: 'Custom…',
+    shuffleAria: 'Shuffle design',
+    shuffleTitle: 'Shuffle for inspiration',
   },
 
   asset: {

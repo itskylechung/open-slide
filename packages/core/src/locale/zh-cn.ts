@@ -231,6 +231,8 @@ export const zhCN: Locale = {
     designToggle: '设计',
     designToggleTitle: '设计样式',
     fontPresetCustom: '自定义…',
+    shuffleAria: '随机设计',
+    shuffleTitle: '随机配色获取灵感',
   },
 
   asset: {

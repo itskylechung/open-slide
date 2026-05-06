@@ -231,6 +231,8 @@ export const zhTW: Locale = {
     designToggle: '設計',
     designToggleTitle: '設計樣式',
     fontPresetCustom: '自訂…',
+    shuffleAria: '隨機設計',
+    shuffleTitle: '隨機配色獲取靈感',
   },
 
   asset: {

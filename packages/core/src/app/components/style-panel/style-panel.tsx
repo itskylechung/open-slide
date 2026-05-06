@@ -1,4 +1,4 @@
-import { Palette, X } from 'lucide-react';
+import { Palette, Shuffle, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Field, NumberField, Section } from '@/components/panel/panel-fields';
 import { PanelShell, usePanelMount } from '@/components/panel/panel-shell';
@@ -28,7 +28,7 @@ type DesignPanelProps = {
 };
 
 export function DesignPanel({ open, onClose }: DesignPanelProps) {
-  const { draft, exists, warning, loaded, dirty, update } = useDesignPanelState();
+  const { draft, exists, warning, loaded, dirty, update, shuffle } = useDesignPanelState();
   const { mounted, animVisible } = usePanelMount(open);
   const t = useLocale();
 
@@ -60,15 +60,27 @@ export function DesignPanel({ open, onClose }: DesignPanelProps) {
               />
             )}
           </div>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            className="text-muted-foreground hover:text-foreground"
-            onClick={onClose}
-            aria-label={t.stylePanel.closePanelAria}
-          >
-            <X className="size-3.5" />
-          </Button>
+          <div className="flex items-center gap-0.5">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="text-muted-foreground hover:text-foreground"
+              onClick={shuffle}
+              aria-label={t.stylePanel.shuffleAria}
+              title={t.stylePanel.shuffleTitle}
+            >
+              <Shuffle className="size-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="text-muted-foreground hover:text-foreground"
+              onClick={onClose}
+              aria-label={t.stylePanel.closePanelAria}
+            >
+              <X className="size-3.5" />
+            </Button>
+          </div>
         </>
       }
       banner={
