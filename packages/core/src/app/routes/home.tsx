@@ -27,7 +27,8 @@ import type { Folder, FolderIcon, SlideModule } from '../lib/sdk';
 import { loadSlide, slideIds } from '../lib/slides';
 
 export function Home() {
-  const { manifest, create, update, remove, assign, renameSlide, deleteSlide } = useFolders();
+  const { manifest, loading, create, update, remove, assign, renameSlide, deleteSlide } =
+    useFolders();
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedId = searchParams.get('f') ?? DRAFT_ID;
   const t = useLocale();
@@ -168,23 +169,27 @@ export function Home() {
               <h1 className="font-heading text-[32px] font-semibold leading-[1.05] tracking-[-0.025em] md:text-[44px]">
                 {title}
               </h1>
-              <span className="folio ml-1 self-end pb-2">
-                {(isSearching ? filteredSlides.length : visibleSlides.length)
-                  .toString()
-                  .padStart(2, '0')}
-                {isSearching && (
-                  <span className="opacity-40">
-                    /{visibleSlides.length.toString().padStart(2, '0')}
-                  </span>
-                )}
-              </span>
+              {!loading && (
+                <span className="folio ml-1 self-end pb-2">
+                  {(isSearching ? filteredSlides.length : visibleSlides.length)
+                    .toString()
+                    .padStart(2, '0')}
+                  {isSearching && (
+                    <span className="opacity-40">
+                      /{visibleSlides.length.toString().padStart(2, '0')}
+                    </span>
+                  )}
+                </span>
+              )}
               <div className="ml-auto w-full md:w-auto">
                 <SearchInput value={query} onChange={setQuery} />
               </div>
             </div>
           </header>
 
-          {visibleSlides.length === 0 ? (
+          {loading ? (
+            <HomeLoading />
+          ) : visibleSlides.length === 0 ? (
             <EmptyState isDraft={isDraft} folderName={selectedFolder?.name} />
           ) : filteredSlides.length === 0 ? (
             <NoResultsState query={query} onClear={() => setQuery('')} />
@@ -267,6 +272,23 @@ function SearchInput({ value, onChange }: { value: string; onChange: (value: str
           <X className="size-3" />
         </button>
       )}
+    </div>
+  );
+}
+
+function HomeLoading() {
+  const t = useLocale();
+  return (
+    <div className="grid place-items-center px-8 py-24 text-muted-foreground">
+      <div className="flex flex-col items-center gap-4">
+        <div className="relative h-px w-56 overflow-hidden bg-hairline">
+          <span
+            aria-hidden
+            className="line-loader-bar absolute inset-y-[-0.5px] left-0 w-1/4 bg-foreground"
+          />
+        </div>
+        <span className="eyebrow text-[11.5px]">{t.slide.loadingEyebrow}</span>
+      </div>
     </div>
   );
 }
