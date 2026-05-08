@@ -309,4 +309,13 @@ export const zhTW: Locale = {
     prevAria: '上一頁',
     nextAria: '下一頁',
   },
+
+  notesDrawer: {
+    toggle: '講稿',
+    pageLabel: '第 {n} / {total} 頁',
+    placeholder: '為這一頁撰寫演講備忘…',
+    statusSaving: '儲存中…',
+    statusSaved: '已儲存',
+    statusError: '儲存失敗：{msg}',
+  },
 };

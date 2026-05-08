@@ -309,4 +309,13 @@ export const en: Locale = {
     prevAria: 'Previous page',
     nextAria: 'Next page',
   },
+
+  notesDrawer: {
+    toggle: 'Notes',
+    pageLabel: 'page {n}/{total}',
+    placeholder: 'Write speaker notes for this slide…',
+    statusSaving: 'Saving…',
+    statusSaved: 'Saved',
+    statusError: 'Save failed: {msg}',
+  },
 };

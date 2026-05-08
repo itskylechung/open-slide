@@ -29,6 +29,7 @@ import { useLocale } from '@/lib/use-locale';
 import { useWheelPageNavigation } from '@/lib/use-wheel-page-navigation';
 import { cn } from '@/lib/utils';
 import { ClickNavZones } from '../components/click-nav-zones';
+import { NotesDrawer } from '../components/notes-drawer';
 import { PdfProgressToast } from '../components/pdf-progress-toast';
 import { Player } from '../components/player';
 import { SlideCanvas } from '../components/slide-canvas';
@@ -400,57 +401,67 @@ export function Slide() {
             </div>
           ) : (
             <DesignProvider slideId={slideId}>
-              <div className="flex min-h-0 flex-1 flex-col md:flex-row">
-                <div className="hidden w-[16.5rem] shrink-0 md:block">
-                  <ThumbnailRail
-                    pages={pages}
-                    design={slide.design}
-                    current={index}
-                    onSelect={goTo}
-                    onReorder={import.meta.env.DEV ? reorderPage : undefined}
-                  />
-                </div>
-                <main
-                  ref={slideViewportRef}
-                  data-inspector-root
-                  className="paper relative min-h-0 min-w-0 flex-1 bg-canvas p-2 md:p-10"
-                >
-                  <SlideWheelNavigation
-                    targetRef={slideViewportRef}
-                    onPrev={() => goTo(index - 1)}
-                    onNext={() => goTo(index + 1)}
-                    canPrev={index > 0}
-                    canNext={index < pageCount - 1}
-                  />
-                  <SlideCanvas design={slide.design}>
-                    <CurrentPage />
-                  </SlideCanvas>
-                  <ClickNavZones
-                    onPrev={() => goTo(index - 1)}
-                    onNext={() => goTo(index + 1)}
-                    canPrev={index > 0}
-                    canNext={index < pageCount - 1}
-                  />
-                  <InspectOverlay />
-                  <SaveBar />
-                  {import.meta.env.DEV && <CommentWidget />}
-                </main>
-                {/* Mobile-only horizontal rail. Sits below the canvas and
+              <div className="flex min-h-0 flex-1 flex-col">
+                <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+                  <div className="hidden w-[16.5rem] shrink-0 md:block">
+                    <ThumbnailRail
+                      pages={pages}
+                      design={slide.design}
+                      current={index}
+                      onSelect={goTo}
+                      onReorder={import.meta.env.DEV ? reorderPage : undefined}
+                    />
+                  </div>
+                  <main
+                    ref={slideViewportRef}
+                    data-inspector-root
+                    className="paper relative min-h-0 min-w-0 flex-1 bg-canvas p-2 md:p-10"
+                  >
+                    <SlideWheelNavigation
+                      targetRef={slideViewportRef}
+                      onPrev={() => goTo(index - 1)}
+                      onNext={() => goTo(index + 1)}
+                      canPrev={index > 0}
+                      canNext={index < pageCount - 1}
+                    />
+                    <SlideCanvas design={slide.design}>
+                      <CurrentPage />
+                    </SlideCanvas>
+                    <ClickNavZones
+                      onPrev={() => goTo(index - 1)}
+                      onNext={() => goTo(index + 1)}
+                      canPrev={index > 0}
+                      canNext={index < pageCount - 1}
+                    />
+                    <InspectOverlay />
+                    <SaveBar />
+                    {import.meta.env.DEV && <CommentWidget />}
+                  </main>
+                  {/* Mobile-only horizontal rail. Sits below the canvas and
                     pads its bottom for the iOS home indicator / Safari URL bar. */}
-                <div
-                  className="shrink-0 border-t border-hairline md:hidden"
-                  style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-                >
-                  <ThumbnailRail
-                    pages={pages}
-                    design={slide.design}
-                    current={index}
-                    onSelect={goTo}
-                    orientation="horizontal"
-                  />
+                  <div
+                    className="shrink-0 border-t border-hairline md:hidden"
+                    style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+                  >
+                    <ThumbnailRail
+                      pages={pages}
+                      design={slide.design}
+                      current={index}
+                      onSelect={goTo}
+                      orientation="horizontal"
+                    />
+                  </div>
+                  <InspectorPanel />
+                  <DesignPanel open={designOpen} onClose={() => setDesignOpen(false)} />
                 </div>
-                <InspectorPanel />
-                <DesignPanel open={designOpen} onClose={() => setDesignOpen(false)} />
+                {import.meta.env.DEV && (
+                  <NotesDrawer
+                    slideId={slideId}
+                    index={index}
+                    total={pageCount}
+                    initial={slide.notes?.[index]}
+                  />
+                )}
               </div>
             </DesignProvider>
           )}

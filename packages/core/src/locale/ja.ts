@@ -313,4 +313,13 @@ export const ja: Locale = {
     prevAria: '前のページ',
     nextAria: '次のページ',
   },
+
+  notesDrawer: {
+    toggle: '発表者ノート',
+    pageLabel: '{n} / {total} ページ',
+    placeholder: 'このスライドの発表者ノートを記入…',
+    statusSaving: '保存中…',
+    statusSaved: '保存済み',
+    statusError: '保存に失敗しました: {msg}',
+  },
 };
