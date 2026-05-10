@@ -150,7 +150,11 @@ export function openSlidePlugin(opts: OpenSlidePluginOptions): Plugin {
           server.ws.send({ type: 'full-reload' });
         }, 150);
       };
-      server.watcher.add(path.join(slidesRoot, '*/index.{tsx,jsx,ts,js}'));
+      // Vite's `root` is the core app dir, so chokidar doesn't watch the
+      // user's slides folder by default. Add it explicitly — and pass the
+      // directory itself, since Vite sets `disableGlobbing: true` and would
+      // otherwise treat a glob pattern as a literal path.
+      if (existsSync(slidesRoot)) server.watcher.add(slidesRoot);
       server.watcher.on('add', (p) => {
         if (isSlideEntry(p)) reload();
       });
