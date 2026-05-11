@@ -1,4 +1,14 @@
-import type { ReactNode } from 'react';
+'use client';
+
+import {
+  animate,
+  motion,
+  useInView,
+  useMotionValue,
+  useReducedMotion,
+  useTransform,
+} from 'motion/react';
+import { type ReactNode, useEffect, useRef } from 'react';
 
 export function Inspector() {
   return (
@@ -89,103 +99,253 @@ function FeatureCell({
   );
 }
 
+const AGENT_LOOP_DURATION = 9;
+const COMMENT_TEXT = 'use the accent color on this title';
+
 function AgentApplyVisual() {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { amount: 0.3 });
+  const reduced = useReducedMotion();
+  const active = inView && !reduced;
+
+  const typingProgress = useMotionValue(1);
+  const commentText = useTransform(typingProgress, (p) =>
+    COMMENT_TEXT.slice(0, Math.max(0, Math.round(p * COMMENT_TEXT.length))),
+  );
+
+  useEffect(() => {
+    if (!active) {
+      typingProgress.set(1);
+      return;
+    }
+    typingProgress.set(0);
+    const controls = animate(typingProgress, [0, 0, 1, 1, 0, 0], {
+      duration: AGENT_LOOP_DURATION,
+      times: [0, 0.22, 0.5, 0.55, 0.58, 1],
+      ease: 'linear',
+      repeat: Infinity,
+    });
+    return () => controls.stop();
+  }, [active, typingProgress]);
+
+  const loopTransition = (times: number[]) =>
+    active
+      ? {
+          duration: AGENT_LOOP_DURATION,
+          times,
+          ease: 'easeInOut' as const,
+          repeat: Infinity,
+        }
+      : undefined;
+
   return (
-    <div className="relative rounded-[6px] border border-[color:var(--color-rule)] bg-[color:var(--color-panel)] overflow-hidden">
+    <div
+      ref={ref}
+      className="relative rounded-[6px] border border-[color:var(--color-rule)] bg-[color:var(--color-panel)] overflow-hidden"
+    >
       <div
-        className="relative aspect-[16/9] overflow-hidden"
+        className="relative aspect-[16/9] grid grid-cols-[1fr_42%]"
         style={{ containerType: 'inline-size' }}
       >
         {/* canvas */}
-        <div className="absolute inset-0 px-[7cqw] py-[5cqw] flex flex-col justify-center gap-[1.4cqw]">
-          <span className="font-[family-name:var(--font-mono)] text-[1.5cqw] tracking-[0.18em] uppercase text-[color:var(--color-muted)]">
-            cover
-          </span>
-          <div className="relative inline-flex w-fit">
+        <div className="relative overflow-hidden">
+          <div className="absolute inset-0 px-[5cqw] py-[5cqw] flex flex-col justify-center gap-[1.4cqw]">
+            <span className="font-[family-name:var(--font-mono)] text-[1.3cqw] tracking-[0.18em] uppercase text-[color:var(--color-muted)]">
+              cover
+            </span>
+            <div className="relative inline-flex w-fit">
+              <motion.span
+                aria-hidden
+                className="absolute -inset-[0.6cqw] border-2 border-[#3b82f6] bg-[#3b82f6]/10 pointer-events-none"
+                animate={
+                  active
+                    ? {
+                        opacity: [0, 0, 1, 1, 0, 0],
+                        scale: [0.92, 0.92, 1, 1, 0.96, 0.96],
+                      }
+                    : { opacity: 1, scale: 1 }
+                }
+                transition={loopTransition([0, 0.06, 0.13, 0.89, 0.94, 1])}
+              />
+              <motion.span
+                className="relative font-[family-name:var(--font-sans)] font-semibold tracking-[-0.035em] leading-[1.0]"
+                style={{ fontSize: '6.4cqw' }}
+                animate={
+                  active
+                    ? {
+                        color: [
+                          'var(--color-text)',
+                          'var(--color-text)',
+                          'var(--color-accent)',
+                          'var(--color-accent)',
+                          'var(--color-text)',
+                          'var(--color-text)',
+                        ],
+                      }
+                    : { color: 'var(--color-text)' }
+                }
+                transition={loopTransition([0, 0.66, 0.72, 0.83, 0.89, 1])}
+              >
+                Q2 Launch
+              </motion.span>
+            </div>
             <span
-              aria-hidden
-              className="absolute -inset-[0.6cqw] border-2 border-[#3b82f6] bg-[#3b82f6]/10 pointer-events-none"
-            />
-            <span
-              className="relative font-[family-name:var(--font-sans)] font-semibold tracking-[-0.035em] leading-[1.0]"
-              style={{ fontSize: '7.6cqw' }}
+              className="font-[family-name:var(--font-sans)] text-[color:var(--color-text-soft)] max-w-[80%]"
+              style={{ fontSize: '1.5cqw', lineHeight: 1.4 }}
             >
-              Q2 Launch
+              What we're shipping, why it matters.
             </span>
           </div>
-          <span
-            className="font-[family-name:var(--font-sans)] text-[color:var(--color-text-soft)] max-w-[55%]"
-            style={{ fontSize: '1.7cqw', lineHeight: 1.4 }}
-          >
-            What we're shipping, why it matters, and how we'll measure success.
-          </span>
-        </div>
 
-        {/* CommentWidget — bottom-right popup + bubble button */}
-        <div
-          className="absolute right-[2cqw] bottom-[2cqw] flex flex-col items-end gap-[1cqw]"
-          style={{ width: '38%' }}
-        >
-          {/* popup */}
-          <div
-            className="w-full rounded-[6px] border border-[color:var(--color-rule)] bg-[color:var(--color-panel-hi)] shadow-[0_8px_24px_-12px_rgba(0,0,0,0.35)] overflow-hidden font-[family-name:var(--font-sans)]"
-            style={{ fontSize: '1.2cqw' }}
-          >
-            <div
-              className="flex items-center justify-between border-b border-[color:var(--color-rule)]"
-              style={{ padding: '1cqw 1.2cqw' }}
-            >
-              <span
-                className="font-semibold text-[color:var(--color-text)]"
-                style={{ fontSize: '1.15cqw' }}
-              >
-                1 comment
-              </span>
-              <span className="text-[color:var(--color-dim)]">✕</span>
-            </div>
-            <div
-              className="border-b border-[color:var(--color-rule)] flex items-start gap-[0.8cqw]"
-              style={{ padding: '1cqw 1.2cqw' }}
-            >
-              <div className="min-w-0 flex-1">
-                <div
-                  className="font-[family-name:var(--font-mono)] text-[color:var(--color-muted)]"
-                  style={{ fontSize: '0.95cqw' }}
-                >
-                  line 58
-                </div>
-                <div
-                  className="text-[color:var(--color-text)]"
-                  style={{ fontSize: '1.2cqw', marginTop: '0.2cqw' }}
-                >
-                  use the accent color on this title
-                </div>
-              </div>
-              <span className="text-[color:var(--color-dim)]">⌫</span>
-            </div>
-            <div
-              className="text-[color:var(--color-muted)]"
-              style={{ padding: '0.9cqw 1.2cqw', fontSize: '1cqw' }}
-            >
-              Run{' '}
-              <span
-                className="rounded-[3px] bg-[color:var(--color-panel)] font-[family-name:var(--font-mono)] text-[color:var(--color-text)]"
-                style={{ padding: '0.15cqw 0.4cqw' }}
-              >
-                /apply-comments
-              </span>{' '}
-              in your agent to apply these.
-            </div>
-          </div>
-
-          {/* bubble button */}
-          <span
-            className="inline-flex items-center gap-[0.6cqw] rounded-full border border-[color:var(--color-rule)] bg-[color:var(--color-panel-hi)] font-[family-name:var(--font-sans)] font-medium text-[color:var(--color-text)]"
-            style={{ padding: '0.7cqw 1.1cqw', fontSize: '1.15cqw' }}
+          {/* floating /apply-comments hint pill (appears after submit) */}
+          <motion.div
+            className="absolute right-[1.5cqw] bottom-[1.5cqw] inline-flex items-center gap-[0.55cqw] rounded-full border border-[color:var(--color-rule)] bg-[color:var(--color-panel-hi)] font-[family-name:var(--font-sans)] text-[color:var(--color-text)] shadow-[0_8px_24px_-12px_rgba(0,0,0,0.35)]"
+            style={{ padding: '0.55cqw 0.9cqw', fontSize: '1.05cqw' }}
+            animate={
+              active
+                ? {
+                    opacity: [0, 0, 1, 1, 0, 0],
+                    y: ['50%', '50%', '0%', '0%', '50%', '50%'],
+                  }
+                : { opacity: 1, y: '0%' }
+            }
+            transition={loopTransition([0, 0.55, 0.62, 0.83, 0.89, 1])}
           >
             <CommentGlyph />
-            <span>1</span>
-          </span>
+            <span style={{ color: 'var(--color-muted)' }}>Run</span>
+            <motion.span
+              className="rounded-[3px] font-[family-name:var(--font-mono)] text-[color:var(--color-text)]"
+              style={{ padding: '0.15cqw 0.5cqw', fontSize: '0.95cqw' }}
+              animate={
+                active
+                  ? {
+                      backgroundColor: [
+                        'var(--color-panel)',
+                        'var(--color-panel)',
+                        'color-mix(in oklab, var(--color-accent) 32%, var(--color-panel))',
+                        'var(--color-panel)',
+                        'var(--color-panel)',
+                      ],
+                    }
+                  : { backgroundColor: 'var(--color-panel)' }
+              }
+              transition={loopTransition([0, 0.62, 0.66, 0.7, 1])}
+            >
+              /apply-comments
+            </motion.span>
+          </motion.div>
+        </div>
+
+        {/* InspectorPanel — right side */}
+        <div className="border-l border-[color:var(--color-rule)] bg-[color:var(--color-panel-hi)] flex flex-col overflow-hidden">
+          {/* header */}
+          <div
+            className="border-b border-[color:var(--color-rule)] flex items-center justify-between"
+            style={{ padding: '1.4cqw 1.6cqw' }}
+          >
+            <div className="flex items-center gap-[0.6cqw]">
+              <span
+                className="font-[family-name:var(--font-sans)] font-semibold tracking-tight text-[color:var(--color-text)]"
+                style={{ fontSize: '1.25cqw' }}
+              >
+                Inspect
+              </span>
+              <span
+                aria-hidden
+                className="bg-[color:var(--color-rule)]"
+                style={{ width: '1px', height: '1.4cqw' }}
+              />
+              <span
+                className="rounded-[3px] border border-[color:var(--color-rule)] bg-[color:var(--color-panel)] font-[family-name:var(--font-mono)] text-[color:var(--color-text)]"
+                style={{ padding: '0.1cqw 0.5cqw', fontSize: '1cqw' }}
+              >
+                &lt;h1&gt;
+              </span>
+            </div>
+            <span className="text-[color:var(--color-dim)]">✕</span>
+          </div>
+
+          <PanelSection label="Content">
+            <PanelTextarea value="Q2 Launch" />
+          </PanelSection>
+
+          <PanelDivider />
+
+          <PanelSection label="Leave a comment">
+            <motion.div
+              className="relative rounded-[4px] border bg-[color:var(--color-panel)]"
+              style={{
+                fontSize: '1.1cqw',
+                padding: '0.7cqw 0.8cqw',
+                minHeight: '3.4cqw',
+                lineHeight: 1.4,
+              }}
+              animate={
+                active
+                  ? {
+                      borderColor: [
+                        'var(--color-rule)',
+                        'var(--color-rule)',
+                        'var(--color-accent)',
+                        'var(--color-accent)',
+                        'var(--color-rule)',
+                        'var(--color-rule)',
+                      ],
+                      boxShadow: [
+                        '0 0 0 0 transparent',
+                        '0 0 0 0 transparent',
+                        '0 0 0 0.25cqw color-mix(in oklab, var(--color-accent) 16%, transparent)',
+                        '0 0 0 0.25cqw color-mix(in oklab, var(--color-accent) 16%, transparent)',
+                        '0 0 0 0 transparent',
+                        '0 0 0 0 transparent',
+                      ],
+                    }
+                  : {
+                      borderColor: 'var(--color-rule)',
+                      boxShadow: '0 0 0 0 transparent',
+                    }
+              }
+              transition={loopTransition([0, 0.14, 0.2, 0.55, 0.58, 1])}
+            >
+              <motion.span
+                aria-hidden
+                className="absolute pointer-events-none text-[color:var(--color-muted)]"
+                style={{ left: '0.8cqw', top: '0.7cqw' }}
+                animate={active ? { opacity: [1, 1, 0, 0, 1, 1] } : { opacity: 0 }}
+                transition={loopTransition([0, 0.2, 0.22, 0.55, 0.58, 1])}
+              >
+                Add a note...
+              </motion.span>
+              <motion.span className="text-[color:var(--color-text)]">{commentText}</motion.span>
+              <motion.span
+                aria-hidden
+                className="inline-block align-[-0.15em] bg-[color:var(--color-text)]"
+                style={{
+                  width: '0.12cqw',
+                  height: '1.3cqw',
+                  marginLeft: '0.15cqw',
+                }}
+                animate={active ? { opacity: [0, 0, 1, 1, 0, 0] } : { opacity: 0 }}
+                transition={loopTransition([0, 0.22, 0.24, 0.55, 0.57, 1])}
+              />
+            </motion.div>
+            <div className="flex items-center justify-between" style={{ marginTop: '0.7cqw' }}>
+              <span
+                className="font-[family-name:var(--font-mono)] text-[color:var(--color-dim)]"
+                style={{ fontSize: '0.95cqw' }}
+              >
+                Cmd + Enter to submit
+              </span>
+              <motion.span
+                className="inline-flex items-center font-[family-name:var(--font-sans)] font-medium text-[color:var(--color-brand-foreground,white)] rounded-[4px] bg-[color:var(--color-accent)]"
+                style={{ fontSize: '1.1cqw', padding: '0.45cqw 0.9cqw' }}
+                animate={active ? { scale: [1, 1, 0.94, 1, 1] } : { scale: 1 }}
+                transition={loopTransition([0, 0.5, 0.53, 0.56, 1])}
+              >
+                Add comment
+              </motion.span>
+            </div>
+          </PanelSection>
         </div>
       </div>
     </div>
@@ -210,8 +370,37 @@ function CommentGlyph() {
 }
 
 function VisualEditorVisual() {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { amount: 0.3 });
+  const reduced = useReducedMotion();
+  const active = inView && !reduced;
+
+  const progress = useMotionValue(0.38);
+  const fontSize = useTransform(progress, [0.38, 0.65], ['6.4cqw', '7.6cqw']);
+  const barWidth = useTransform(progress, (p) => `${p * 100}%`);
+  const thumbLeft = useTransform(progress, (p) => `calc(${p * 100}% - 0.55cqw)`);
+  const sizeNum = useTransform(progress, [0.38, 0.65], [88, 104]);
+  const sizeLabel = useTransform(sizeNum, (v) => `${Math.round(v)}px`);
+
+  useEffect(() => {
+    if (!active) {
+      progress.set(0.38);
+      return;
+    }
+    const controls = animate(progress, [0.38, 0.65, 0.65, 0.38, 0.38], {
+      duration: 6,
+      times: [0, 0.2, 0.5, 0.7, 1],
+      ease: 'easeInOut',
+      repeat: Infinity,
+    });
+    return () => controls.stop();
+  }, [active, progress]);
+
   return (
-    <div className="relative rounded-[6px] border border-[color:var(--color-rule)] bg-[color:var(--color-panel)] overflow-hidden">
+    <div
+      ref={ref}
+      className="relative rounded-[6px] border border-[color:var(--color-rule)] bg-[color:var(--color-panel)] overflow-hidden"
+    >
       <div
         className="relative aspect-[16/9] grid grid-cols-[1fr_42%]"
         style={{ containerType: 'inline-size' }}
@@ -227,12 +416,12 @@ function VisualEditorVisual() {
                 aria-hidden
                 className="absolute -inset-[0.6cqw] border-2 border-[#3b82f6] bg-[#3b82f6]/10 pointer-events-none"
               />
-              <span
+              <motion.span
                 className="relative font-[family-name:var(--font-sans)] font-semibold tracking-[-0.035em] leading-[1.0] text-[color:var(--color-accent)]"
-                style={{ fontSize: '6.4cqw' }}
+                style={{ fontSize }}
               >
                 Q2 Launch
-              </span>
+              </motion.span>
             </div>
             <span
               className="font-[family-name:var(--font-sans)] text-[color:var(--color-text-soft)] max-w-[80%]"
@@ -259,14 +448,26 @@ function VisualEditorVisual() {
                 className="inline-flex items-center gap-[0.5cqw] font-[family-name:var(--font-sans)] font-medium text-[color:var(--color-text)]"
                 style={{ padding: '0 0.7cqw', fontSize: '1.25cqw' }}
               >
-                <span
+                <motion.span
                   className="rounded-full bg-[color:var(--color-accent)]"
-                  style={{
-                    width: '0.7cqw',
-                    height: '0.7cqw',
-                    boxShadow:
-                      '0 0 0 0.3cqw color-mix(in oklab, var(--color-accent) 18%, transparent)',
-                  }}
+                  style={{ width: '0.7cqw', height: '0.7cqw' }}
+                  animate={
+                    active
+                      ? {
+                          boxShadow: [
+                            '0 0 0 0.3cqw color-mix(in oklab, var(--color-accent) 18%, transparent)',
+                            '0 0 0 0.55cqw color-mix(in oklab, var(--color-accent) 6%, transparent)',
+                            '0 0 0 0.3cqw color-mix(in oklab, var(--color-accent) 18%, transparent)',
+                          ],
+                        }
+                      : {
+                          boxShadow:
+                            '0 0 0 0.3cqw color-mix(in oklab, var(--color-accent) 18%, transparent)',
+                        }
+                  }
+                  transition={
+                    active ? { duration: 2.2, repeat: Infinity, ease: 'easeInOut' } : undefined
+                  }
                 />
                 <span>1 unsaved change</span>
               </span>
@@ -325,20 +526,25 @@ function VisualEditorVisual() {
           <PanelSection label="Typography">
             <PanelRow label="Size">
               <div className="flex-1 h-[0.5cqw] rounded-full bg-[color:var(--color-panel)] relative">
-                <div
+                <motion.div
                   className="absolute left-0 top-0 bottom-0 rounded-full bg-[color:var(--color-accent)]"
-                  style={{ width: '38%' }}
+                  style={{ width: barWidth }}
                 />
-                <div
+                <motion.div
                   className="absolute top-1/2 -translate-y-1/2 rounded-full bg-[color:var(--color-text)] border border-[color:var(--color-accent)]"
                   style={{
                     width: '1.1cqw',
                     height: '1.1cqw',
-                    left: 'calc(38% - 0.55cqw)',
+                    left: thumbLeft,
                   }}
                 />
               </div>
-              <PanelInput value="88px" />
+              <motion.span
+                className="flex-1 rounded-[4px] border border-[color:var(--color-rule)] bg-[color:var(--color-panel)] text-[color:var(--color-text)] font-[family-name:var(--font-mono)]"
+                style={{ fontSize: '1.05cqw', padding: '0.4cqw 0.6cqw' }}
+              >
+                {sizeLabel}
+              </motion.span>
             </PanelRow>
             <PanelRow label="Weight">
               <PanelSelect value="Semibold · 600" />
