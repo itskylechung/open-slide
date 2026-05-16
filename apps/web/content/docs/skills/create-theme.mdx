@@ -9,20 +9,32 @@ recipe into a file the agent can read.
 
 ## What it does
 
-Writes `themes/<id>.md` with the palette, type stack, layout vocabulary,
-and voice notes that future `/create-slide` calls can reference.
+Writes a **theme bundle** under `themes/` — two paired files that share a
+stem:
+
+- `themes/<id>.md` — palette, type stack, layout vocabulary, fixed
+  Title/Footer/Eyebrow components, motion, and voice notes that
+  `/create-slide` reads on its next run.
+- `themes/<id>.demo.tsx` — a runnable 2–3 page mini-slide that inlines
+  the same components from the markdown. The dev UI's **Themes** panel
+  imports it and renders it as the theme's live preview.
+
+Both files are always produced together — a theme without its demo can't
+preview, a demo without its markdown can't be picked by `/create-slide`.
 
 The input can be:
 
 - **An existing deck.** The skill scans `slides/<id>/index.tsx`, distils the
-  recurring tokens, and writes them as markdown.
+  recurring tokens, and writes them out.
 - **A brief.** Describe the system in chat (*"warm editorial, serif display,
-  high-contrast palette"*) and the skill bootstraps a theme file from
+  high-contrast palette"*) and the skill bootstraps the bundle from
   scratch.
+- **Image references.** Pass screenshots or mood-board images and the
+  skill extracts palette, type, and layout cues from them.
 
 ## Output
 
-A markdown file under `themes/`:
+A markdown recipe:
 
 ```md title="themes/corporate.md"
 # Corporate
@@ -39,6 +51,17 @@ A markdown file under `themes/`:
 ## Voice
 - Tight, declarative, never coy.
 - One concept per slide.
+```
+
+…paired with a preview module:
+
+```tsx title="themes/corporate.demo.tsx"
+import type { Page } from '@open-slide/core';
+
+const Cover: Page = () => (/* …inline Title / Footer using theme tokens… */);
+const Content: Page = () => (/* … */);
+
+export default [Cover, Content];
 ```
 
 See [Themes](/docs/core-feature/themes) for how a theme is consumed.

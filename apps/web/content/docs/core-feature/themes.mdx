@@ -3,26 +3,37 @@ title: Themes
 description: Reusable design systems shared across decks.
 ---
 
-A theme is a markdown file under `themes/<id>.md`. The `create-slide` skill
-reads a theme before authoring so the agent matches the visual system you
-want.
+A theme is a **bundle of two paired files** under `themes/`:
+
+- `themes/<id>.md` — agent-facing recipe: palette, typography, layout,
+  fixed components, motion. `create-slide` reads this before authoring.
+- `themes/<id>.demo.tsx` — a runnable mini-slide that demonstrates the
+  theme. The dev UI's **Themes** panel imports it and renders it as the
+  theme's live preview card.
+
+Both files share the same stem so the runtime can pair them automatically.
 
 ## Why themes
 
 If you author more than two decks you'll want them to look related. A theme
 captures the *recipe* — palette, type stack, layout vocabulary, motion
-language — in one place that any deck can reference.
+language — in one place that any deck can reference. The demo TSX makes
+that recipe visible: you can flip through theme previews in the dev UI
+before picking one.
 
 ## File layout
 
 ```text
 themes/
 ├── corporate.md
+├── corporate.demo.tsx
 ├── editorial.md
-└── retro-print.md
+├── editorial.demo.tsx
+├── retro-print.md
+└── retro-print.demo.tsx
 ```
 
-Each file is free-form markdown. A useful template:
+The markdown is free-form. A useful template:
 
 ```md title="themes/corporate.md"
 # Corporate
@@ -40,6 +51,23 @@ Each file is free-form markdown. A useful template:
 - Tight, declarative, never coy.
 - One concept per slide.
 ```
+
+The demo is a normal slide module — same shape as `slides/<id>/index.tsx`,
+just placed under `themes/` so the runtime treats it as preview-only (it
+does not appear in the slides list):
+
+```tsx title="themes/corporate.demo.tsx"
+import type { Page } from '@open-slide/core';
+
+const Cover: Page = () => (/* …inline Title / Footer using theme tokens… */);
+const Content: Page = () => (/* … */);
+
+export default [Cover, Content];
+```
+
+Keep the demo's inline Title/Footer/Eyebrow components verbatim in sync
+with the snippets in the markdown — what authors see in the Themes panel
+should match what `create-slide` will paste into a real slide.
 
 ## Using a theme
 
