@@ -95,13 +95,14 @@ async function runInit(dirArg: string | undefined, flags: InitCliFlags): Promise
         );
       }
       process.stdout.write(
-        chalk.yellow(`! "${dir}" has characters that confuse shells (spaces, quotes, etc.).\n`),
+        `${chalk.yellow('!')} ${chalk.bold(`"${dir}"`)} has characters that confuse shells.\n` +
+          `  Suggested: ${chalk.cyan(`"${safe}"`)}\n`,
       );
       const answers = await prompts(
         {
           type: 'text',
           name: 'dir',
-          message: 'Use a safer directory name',
+          message: 'Directory name',
           initial: safe,
         },
         { onCancel },
