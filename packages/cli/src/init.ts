@@ -42,11 +42,12 @@ export function sanitizeDirName(value: string): string {
   if (trimmed === '.' || trimmed === '..') return trimmed;
   const cleaned = trimmed
     .replace(/\s+/g, '-')
-    .replace(/[^A-Za-z0-9_./-]/g, '-')
+    .replace(/[^\\\p{L}\p{N}_./-]/gu, '-')
     .replace(/-+/g, '-')
     .replace(/(^-|-$)/g, '')
-    .replace(/-*\/-*/g, '/');
-  return cleaned || 'my-slides';
+    .replace(/-*([/\\])-*/g, '$1');
+  if (cleaned === '' || /^[/\\]+$/.test(cleaned)) return 'my-slides';
+  return cleaned;
 }
 
 export async function isDirNonEmpty(target: string): Promise<boolean> {
